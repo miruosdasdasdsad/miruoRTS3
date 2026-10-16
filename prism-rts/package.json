@@ -1,0 +1,12 @@
+{
+  "name": "prism-command",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local polygon RTS with independent energy cores",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check dist/terrain.js && node --check dist/navigation.js && node --check dist/balance.js && node --check dist/map-config.js && node --check dist/map-editor.js && node --check dist/fog.js && node --check dist/engine.js && node --check dist/telemetry.js && node --check dist/lab-storage.js && node --check dist/lab.js && node --check dist/render.js && node --check dist/interaction.js && node --check dist/core-drag.js && node --check dist/production.js && node --check dist/app.js"
+  }
+}

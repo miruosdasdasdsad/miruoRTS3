@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10171b">
+  <meta name="description" content="棱镜指挥本地数值实验室：编辑地图、地形、中立资源与出生点，调整数值，查看真实对局曲线。">
+  <title>数值实验室 · PRISM COMMAND</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2388e6c5' d='m16 2 14 8-4 17-10 4L3 24 2 9Z'/%3E%3Cpath fill='%239d8bdd' d='m16 2 0 29L3 24 2 9Z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至主要内容</a>
+  <aside class="rail">
+    <a class="brand" href="./"><span class="brand-mark">◇</span><span><strong>PRISM</strong><small>棱镜指挥</small></span></a>
+    <div class="rail-caption">COMMAND WORKSPACE</div>
+    <nav aria-label="实验室页面">
+      <button class="nav-link active" data-view="balance" aria-current="page"><span>⌘</span>数值配置<i>01</i></button>
+      <button class="nav-link" data-view="map"><span>▧</span>地图编辑<i>02</i></button>
+      <button class="nav-link" data-view="report"><span>⌁</span>对局观测<i>03</i></button>
+    </nav>
+    <div class="rail-note"><span class="status-dot"></span> 本地实验环境<p>配置保存在此浏览器。<br>同一地址下的游戏共享配置与最新对局。</p></div>
+    <a class="back-link" href="./">↗ 返回战场</a>
+  </aside>
+  <main id="main" tabindex="-1">
+    <header class="page-header"><div><span class="eyebrow">PRISM / BALANCE LAB</span><h1>数值实验室<span>实验、比较、再出发。</span></h1></div><a class="header-back" href="./">↗ 返回战场</a><span class="local-chip"><span class="status-dot"></span> LOCAL ONLY</span></header>
+    <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+    <section id="balance-view" aria-labelledby="balance-heading">
+      <div class="intro"><div><span class="eyebrow">01 / CONFIGURATION</span><h2 id="balance-heading">让每一种选择都有价值。</h2><p>修改基础规则，比较兵种定位，再用真实对局验证。</p></div><div id="save-state" class="state-chip">平衡基准</div></div>
+      <div class="notice"><span>↗</span><p><strong>保存后返回游戏，开始新局或重新开始才会应用。</strong> 双方共用同一套数值；已有对局保留自己的配置快照。切到实验室时游戏会自动暂停。</p></div>
+      <div id="balance-overview" class="overview-grid"></div>
+      <section class="panel editor-panel" aria-label="配置编辑器">
+        <div class="panel-toolbar"><div class="tabs" role="tablist" aria-label="数值分类"><button id="tab-units" role="tab" data-category="units" aria-controls="editor-content" aria-selected="true">兵种 <small>08</small></button><button id="tab-buildings" role="tab" data-category="buildings" aria-controls="editor-content" aria-selected="false" tabindex="-1">建筑</button><button id="tab-technology" role="tab" data-category="technology" aria-controls="editor-content" aria-selected="false" tabindex="-1">科技 <small>03</small></button><button id="tab-economy" role="tab" data-category="economy" aria-controls="editor-content" aria-selected="false" tabindex="-1">经济</button></div><span class="toolbar-note">基础数值 · 不含科技加成</span></div>
+        <div id="editor-content" role="tabpanel" aria-labelledby="tab-units"></div>
+      </section>
+      <section class="panel compare-panel" aria-labelledby="compare-heading"><div class="panel-heading"><div><span class="eyebrow">ROLE COMPARISON</span><h3 id="compare-heading">同一预算，不同战场职责。</h3></div><span class="subtle">8 种兵种 · 即时推导</span></div><div class="table-scroll"><table><caption class="sr-only">兵种基础数值派生比较</caption><thead><tr><th scope="col">兵种</th><th scope="col">基础 DPS</th><th scope="col">DPS / 100 能量</th><th scope="col">有效生命</th><th scope="col">射程</th><th scope="col">持续生产间隔</th></tr></thead><tbody id="comparison-body"></tbody></table></div><p class="formula-note">DPS = 单次伤害 ÷ 攻击间隔；有效生命 = 生命 ÷ 承伤倍率。持续生产间隔 = max（生产时间，造价 ÷ 单核心产能），忽略初始储备、停电与调度。这里不计科技、克制与范围命中数，也不代表实战胜率。</p></section>
+      <footer class="save-bar"><div><strong id="draft-status">配置已就绪</strong><small id="validation-summary">所有改动需手动保存。</small></div><div class="save-actions"><button id="restore-saved">恢复已保存</button><button id="load-baseline">载入平衡基准</button><button id="import-balance">导入 JSON</button><button id="export-balance">导出 JSON</button><button class="primary" id="save-balance">保存并用于下一局 <span>↗</span></button></div></footer>
+    </section>
+    <section id="map-view" aria-labelledby="map-heading" hidden>
+      <div class="intro"><div><span class="eyebrow">02 / MAP WORKSHOP</span><h2 id="map-heading">战场布局，由你定义。</h2><p>塑造通道、布置资源，让下一局从新的起点开始。</p></div><span id="map-save-state" class="state-chip">默认地图</span></div>
+      <div class="notice"><span>↗</span><p><strong>地图保存后，开始新局或重新开始时生效。</strong> 当前对局保留原地图。战场尺寸固定为 3600 × 2400；湖泊、岩壁和岩石均不可通行、不可建造。</p></div>
+      <section class="panel map-workshop" aria-label="可视化地图编辑器">
+        <div class="map-toolbar"><div class="map-tools" role="group" aria-label="地图工具">
+          <button data-map-tool="select" aria-pressed="true" title="选择、拖动物件和顶点（V）">↖ 选择</button>
+          <button data-map-tool="water" aria-pressed="false">≈ 湖泊</button><button data-map-tool="ridge" aria-pressed="false">▱ 岩壁</button><button data-map-tool="rock" aria-pressed="false">● 岩石</button>
+          <button data-map-tool="cache" aria-pressed="false">▧ 核心仓库</button><button data-map-tool="core" aria-pressed="false">◇ 中立核心</button><button data-map-tool="capture" aria-pressed="false">◎ 据点</button>
+          <button data-map-tool="ally" aria-pressed="false">⚑ 我方出生</button><button data-map-tool="enemy" aria-pressed="false">⚑ 敌方出生</button>
+        </div></div>
+        <div class="map-editbar"><div class="map-history"><button id="map-undo" disabled title="撤销（Ctrl+Z）">↶ 撤销</button><button id="map-redo" disabled title="重做（Ctrl+Shift+Z）">↷ 重做</button><button id="map-duplicate" disabled>复制</button><button id="map-delete" disabled>删除</button></div><label class="map-snap"><input id="map-snap" type="checkbox" checked> 吸附 10 米网格</label></div>
+        <div class="map-layout"><div class="map-stage"><div class="map-stage-top"><span id="map-tool-hint">选择物件后拖动；地形的圆点可调整轮廓。</span><span id="map-coordinates">3600 × 2400</span></div>
+          <svg id="map-canvas" viewBox="0 0 3600 2400" tabindex="0" role="application" aria-label="地图预览：使用工具放置物件，拖动调整位置；也可在属性面板输入坐标"></svg>
+          <div class="map-legend"><span><i class="water"></i>湖泊</span><span><i class="ridge"></i>岩壁</span><span><i class="neutral"></i>中立资源</span><span><i class="ally"></i>我方</span><span><i class="enemy"></i>敌方</span><span class="map-legend-tip">双击地形边缘增加顶点 · 方向键微调</span></div>
+        </div><aside class="map-inspector" aria-label="地图物件属性"><div class="map-document"><label for="map-name">地图名称</label><input id="map-name" maxlength="60" type="text"><label for="map-object-list">地图物件 <span id="map-object-count"></span></label><select id="map-object-list" aria-label="选择地图中的物件"></select></div><div id="map-properties"></div></aside></div>
+        <div class="map-validation"><div id="map-validation" role="status" aria-live="polite"></div><button id="map-check-routes">检查双方通路</button></div>
+        <div id="map-route-result" class="map-route-result" role="status" hidden></div>
+      </section>
+      <footer class="save-bar"><div><strong id="map-draft-status">地图已就绪</strong><small>地图和数值分别保存，可独立导入导出。</small></div><div class="save-actions"><button id="map-restore">恢复已保存</button><button id="map-baseline">载入默认地图</button><button id="map-import">导入 JSON</button><button id="map-export">导出 JSON</button><button id="map-save" class="primary">保存地图并用于下一局 ↗</button></div></footer>
+    </section>
+    <section id="report-view" aria-labelledby="report-heading" hidden>
+      <div class="intro"><div><span class="eyebrow">03 / MATCH OBSERVATORY</span><h2 id="report-heading">把一局作战，拆成清晰的信号。</h2><p>查看实际记录的经济、部队、核心与关键事件。</p></div><div class="report-actions"><button id="latest-report">本地最新</button><button id="import-report">导入报告</button><button id="export-report" disabled>导出报告</button></div></div>
+      <div id="report-empty" class="empty-state panel"><div class="empty-visual" aria-hidden="true"><i></i><i></i><i></i><span>⌁</span></div><span class="eyebrow">AWAITING FIELD DATA</span><h3>等待第一份战场记录</h3><p>返回游戏开始一局，再来到这里查看真实曲线。<br>也可以导入从游戏导出的对局报告。</p><a class="primary button-link" href="./">返回战场 ↗</a><small>不生成示例数据 · 不预测胜率</small></div>
+      <div id="report-content" hidden>
+        <div class="report-meta"><div><strong id="report-title"></strong><span id="report-meta"></span></div><span id="report-source" class="state-chip"></span></div>
+        <div id="report-debug" class="notice warning" hidden></div>
+        <div id="report-kpis" class="overview-grid report-kpis"></div>
+        <section class="panel chart-panel" aria-labelledby="chart-heading"><div class="panel-heading"><div><span class="eyebrow">BATTLE TIMELINE</span><h3 id="chart-heading">战场趋势</h3></div><div class="metric-tabs" role="group" aria-label="图表指标"><button data-metric="energy" aria-pressed="true">能量</button><button data-metric="army" aria-pressed="false">军力</button><button data-metric="cores" aria-pressed="false">核心</button><button data-metric="kills" aria-pressed="false">击杀</button><button data-metric="power" aria-pressed="false">电力</button></div></div><div id="chart-legend" class="chart-legend"></div><div class="chart-wrap"><svg id="match-chart" viewBox="0 0 960 300" role="img" aria-label="双方能量随对局时间变化的折线图"></svg></div><div class="chart-inspector"><label for="sample-position">观察时刻 <strong id="sample-time">00:00</strong></label><input id="sample-position" type="range" min="0" max="0" value="0" aria-label="选择曲线采样时刻"><div id="sample-values" class="sample-values"></div></div><p id="chart-note" class="formula-note"></p></section>
+        <div class="report-bottom"><section class="panel composition-panel" aria-labelledby="composition-heading"><div class="panel-heading"><div><span class="eyebrow">FORCE COMPOSITION</span><h3 id="composition-heading">部队编成</h3></div><span class="subtle">报告末次采样</span></div><div id="composition"></div></section><section class="panel events-panel" aria-labelledby="events-heading"><div class="panel-heading"><div><span class="eyebrow">FIELD EVENTS</span><h3 id="events-heading">战场时间线</h3></div><span id="events-count" class="subtle"></span></div><ol id="events"></ol></section></div>
+        <div class="report-footer"><span id="report-balance-note"></span><button id="use-report-balance">将本局配置载入草稿</button></div>
+      </div>
+    </section>
+    <footer class="page-footer"><span>PRISM COMMAND <i>/</i> BALANCE LAB</span><span>读懂每一次取舍。</span></footer>
+  </main>
+  <input id="balance-file" type="file" accept=".json,application/json" hidden>
+  <input id="report-file" type="file" accept=".json,application/json" hidden>
+  <input id="map-file" type="file" accept=".json,application/json" hidden>
+  <script type="module" src="lab.js"></script>
+</body>
+</html>

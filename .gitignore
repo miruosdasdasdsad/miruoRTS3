@@ -1,0 +1,19 @@
+# Dependencies and local configuration
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Runtime files and local backups
+*.log
+*.pid
+.backups/
+
+# Keep browser verification scripts, exclude generated reports and screenshots
+**/.verification/*
+!**/.verification/*.mjs
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini

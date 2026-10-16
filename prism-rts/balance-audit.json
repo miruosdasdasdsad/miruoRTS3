@@ -1,0 +1,669 @@
+{
+  "kind": "prism-balance-audit",
+  "version": 1,
+  "method": {
+    "budgetCeiling": 900,
+    "terrain": "open",
+    "technology": false,
+    "micro": false,
+    "step": 0.05,
+    "swappedSides": true,
+    "note": "双方受同一预算上限约束，整兵购买使实际开支不同。剩余价值按生命比例计算；不代表地图实战胜率。"
+  },
+  "balance": {
+    "version": 1,
+    "economy": {
+      "rate": 6,
+      "startingEnergy": 180,
+      "basePower": 12,
+      "captureDuration": 180
+    },
+    "buildings": {
+      "cache": {
+        "name": "中立核心仓库",
+        "en": "NEUTRAL CORE CACHE",
+        "hp": 480,
+        "r": 48,
+        "cost": 0,
+        "time": 0,
+        "power": 0,
+        "acceptsCore": false,
+        "buildable": false,
+        "color": "#efca78"
+      },
+      "hq": {
+        "name": "建造厂",
+        "en": "CONSTRUCTION YARD",
+        "hp": 1800,
+        "r": 59,
+        "cost": 0,
+        "time": 0,
+        "power": 0,
+        "acceptsCore": true,
+        "color": "#88e6c5"
+      },
+      "power": {
+        "name": "电场",
+        "en": "POWER PLANT",
+        "hp": 650,
+        "r": 42,
+        "cost": 120,
+        "time": 6,
+        "power": -36,
+        "acceptsCore": false,
+        "color": "#e9c779"
+      },
+      "barracks": {
+        "name": "兵营",
+        "en": "BARRACKS",
+        "hp": 800,
+        "r": 48,
+        "cost": 180,
+        "time": 8,
+        "power": 8,
+        "acceptsCore": true,
+        "color": "#aa9ae5"
+      },
+      "factory": {
+        "name": "战车工厂",
+        "en": "WAR FACTORY",
+        "hp": 1100,
+        "r": 56,
+        "cost": 280,
+        "time": 11,
+        "power": 14,
+        "acceptsCore": true,
+        "color": "#86b9ed"
+      },
+      "tower": {
+        "name": "防御塔",
+        "en": "DEFENSE TOWER",
+        "hp": 750,
+        "r": 29,
+        "cost": 140,
+        "time": 7,
+        "power": 10,
+        "acceptsCore": false,
+        "range": 235,
+        "damage": 19,
+        "reload": 0.8,
+        "color": "#e598bf"
+      },
+      "academy": {
+        "name": "战术学院",
+        "en": "TACTICAL ACADEMY",
+        "hp": 720,
+        "r": 43,
+        "cost": 200,
+        "time": 10,
+        "power": 8,
+        "acceptsCore": true,
+        "color": "#efa576",
+        "unlocks": [
+          "sniper",
+          "rocketeer"
+        ],
+        "technology": {
+          "name": "棱镜火控",
+          "description": "全军伤害 +20%",
+          "cost": 180,
+          "time": 18,
+          "stat": "damage",
+          "multiplier": 1.2
+        }
+      },
+      "arsenal": {
+        "name": "装甲研究所",
+        "en": "ARMOR LAB",
+        "hp": 950,
+        "r": 49,
+        "cost": 260,
+        "time": 12,
+        "power": 10,
+        "acceptsCore": true,
+        "color": "#92a9ed",
+        "unlocks": [
+          "heavyTank",
+          "artillery"
+        ],
+        "technology": {
+          "name": "复合装甲",
+          "description": "全军受到伤害 −20%",
+          "cost": 220,
+          "time": 22,
+          "stat": "incomingDamage",
+          "multiplier": 0.8
+        }
+      },
+      "mobility": {
+        "name": "动力研究所",
+        "en": "MOBILITY LAB",
+        "hp": 700,
+        "r": 43,
+        "cost": 180,
+        "time": 9,
+        "power": 6,
+        "acceptsCore": true,
+        "color": "#73d8d0",
+        "unlocks": [
+          "scout",
+          "striker"
+        ],
+        "technology": {
+          "name": "超导驱动",
+          "description": "全军移动速度 +20%",
+          "cost": 160,
+          "time": 16,
+          "stat": "speed",
+          "multiplier": 1.2
+        }
+      }
+    },
+    "units": {
+      "infantry": {
+        "name": "棱镜步兵",
+        "en": "PRISM RANGER",
+        "hp": 100,
+        "r": 10,
+        "cost": 45,
+        "time": 4,
+        "speed": 68,
+        "range": 135,
+        "damage": 10,
+        "reload": 0.75,
+        "vehicleBonus": 0.6,
+        "buildingBonus": 0.7,
+        "producer": "barracks",
+        "color": "#88e6c5",
+        "infantryBonus": 1,
+        "incomingDamage": 1,
+        "splash": 0,
+        "role": "均衡步兵 · 对战车 ×0.6 · 对建筑 ×0.7"
+      },
+      "tank": {
+        "name": "折光战车",
+        "en": "REFRACTOR",
+        "hp": 380,
+        "r": 19,
+        "cost": 130,
+        "time": 8,
+        "speed": 46,
+        "range": 190,
+        "damage": 34,
+        "reload": 1.55,
+        "vehicleBonus": 1.2,
+        "producer": "factory",
+        "color": "#86b9ed",
+        "infantryBonus": 1,
+        "buildingBonus": 1,
+        "incomingDamage": 1,
+        "splash": 0,
+        "role": "主力反装甲战车 · 对战车 ×1.2"
+      },
+      "sniper": {
+        "name": "狙击手",
+        "en": "SPECTRUM SNIPER",
+        "hp": 65,
+        "r": 10,
+        "cost": 80,
+        "time": 6,
+        "speed": 57,
+        "range": 300,
+        "damage": 30,
+        "reload": 2,
+        "infantryBonus": 1.5,
+        "vehicleBonus": 0.35,
+        "buildingBonus": 0.4,
+        "producer": "barracks",
+        "requires": "academy",
+        "color": "#e9c779",
+        "incomingDamage": 1,
+        "splash": 0,
+        "role": "远程反步兵 · 对步兵 ×1.5 · 对战车 ×0.35 · 对建筑 ×0.4"
+      },
+      "rocketeer": {
+        "name": "火箭兵",
+        "en": "LANCE ROCKETEER",
+        "hp": 110,
+        "r": 12,
+        "cost": 90,
+        "time": 6,
+        "speed": 54,
+        "range": 215,
+        "damage": 24,
+        "reload": 1.8,
+        "infantryBonus": 0.55,
+        "vehicleBonus": 2.4,
+        "buildingBonus": 1.1,
+        "producer": "barracks",
+        "requires": "academy",
+        "color": "#efa576",
+        "incomingDamage": 1,
+        "splash": 0,
+        "role": "反装甲支援 · 对步兵 ×0.55 · 对战车 ×2.4 · 对建筑 ×1.1"
+      },
+      "striker": {
+        "name": "突击步兵",
+        "en": "PULSE STRIKER",
+        "hp": 145,
+        "r": 11,
+        "cost": 70,
+        "time": 5,
+        "speed": 88,
+        "range": 95,
+        "damage": 10,
+        "reload": 0.5,
+        "infantryBonus": 1.5,
+        "vehicleBonus": 0.45,
+        "buildingBonus": 0.65,
+        "producer": "barracks",
+        "requires": "mobility",
+        "color": "#73d8d0",
+        "incomingDamage": 1,
+        "splash": 0,
+        "role": "高速近距离突击 · 对步兵 ×1.5 · 对战车 ×0.45 · 对建筑 ×0.65"
+      },
+      "scout": {
+        "name": "侦察车",
+        "en": "GLINT SCOUT",
+        "hp": 180,
+        "r": 15,
+        "cost": 95,
+        "time": 5,
+        "speed": 100,
+        "range": 145,
+        "damage": 13,
+        "reload": 0.65,
+        "infantryBonus": 1.25,
+        "vehicleBonus": 0.55,
+        "buildingBonus": 0.65,
+        "producer": "factory",
+        "requires": "mobility",
+        "color": "#a6e7b0",
+        "incomingDamage": 1,
+        "splash": 0,
+        "role": "高速侦察与侧翼骚扰 · 对步兵 ×1.25 · 对战车 ×0.55 · 对建筑 ×0.65"
+      },
+      "heavyTank": {
+        "name": "重装战车",
+        "en": "BASTION",
+        "hp": 680,
+        "r": 23,
+        "cost": 240,
+        "time": 12,
+        "speed": 32,
+        "range": 180,
+        "damage": 52,
+        "reload": 1.9,
+        "infantryBonus": 1.2,
+        "incomingDamage": 0.85,
+        "producer": "factory",
+        "requires": "arsenal",
+        "color": "#b0baf1",
+        "vehicleBonus": 1,
+        "buildingBonus": 1,
+        "splash": 0,
+        "role": "前排重甲 · 对步兵 ×1.2 · 受到伤害 −15%"
+      },
+      "artillery": {
+        "name": "攻城火炮",
+        "en": "NOVA ARTILLERY",
+        "hp": 210,
+        "r": 19,
+        "cost": 180,
+        "time": 10,
+        "speed": 35,
+        "range": 350,
+        "damage": 45,
+        "reload": 3.2,
+        "splash": 65,
+        "vehicleBonus": 0.8,
+        "buildingBonus": 1.4,
+        "producer": "factory",
+        "requires": "arsenal",
+        "color": "#f0abbb",
+        "infantryBonus": 1,
+        "incomingDamage": 1,
+        "role": "远程范围轰击 · 对战车 ×0.8 · 对建筑 ×1.4 · 溅射半径 65"
+      }
+    }
+  },
+  "results": [
+    {
+      "types": [
+        "rocketeer",
+        "tank"
+      ],
+      "counts": [
+        10,
+        6
+      ],
+      "spent": [
+        900,
+        780
+      ],
+      "seconds": 13.8,
+      "survivors": [
+        6,
+        0
+      ],
+      "remainingValue": [
+        456.5,
+        0
+      ],
+      "winner": "rocketeer"
+    },
+    {
+      "types": [
+        "tank",
+        "rocketeer"
+      ],
+      "counts": [
+        6,
+        10
+      ],
+      "spent": [
+        780,
+        900
+      ],
+      "seconds": 15.3,
+      "survivors": [
+        0,
+        5
+      ],
+      "remainingValue": [
+        0,
+        394.4
+      ],
+      "winner": "rocketeer"
+    },
+    {
+      "types": [
+        "tank",
+        "striker"
+      ],
+      "counts": [
+        6,
+        12
+      ],
+      "spent": [
+        780,
+        840
+      ],
+      "seconds": 20.35,
+      "survivors": [
+        6,
+        0
+      ],
+      "remainingValue": [
+        684.6,
+        0
+      ],
+      "winner": "tank"
+    },
+    {
+      "types": [
+        "striker",
+        "tank"
+      ],
+      "counts": [
+        12,
+        6
+      ],
+      "spent": [
+        840,
+        780
+      ],
+      "seconds": 20.15,
+      "survivors": [
+        0,
+        6
+      ],
+      "remainingValue": [
+        0,
+        718.4
+      ],
+      "winner": "tank"
+    },
+    {
+      "types": [
+        "sniper",
+        "infantry"
+      ],
+      "counts": [
+        11,
+        20
+      ],
+      "spent": [
+        880,
+        900
+      ],
+      "seconds": 19.15,
+      "survivors": [
+        0,
+        3
+      ],
+      "remainingValue": [
+        0,
+        33.8
+      ],
+      "winner": "infantry"
+    },
+    {
+      "types": [
+        "infantry",
+        "sniper"
+      ],
+      "counts": [
+        20,
+        11
+      ],
+      "spent": [
+        900,
+        880
+      ],
+      "seconds": 20.55,
+      "survivors": [
+        0,
+        3
+      ],
+      "remainingValue": [
+        0,
+        104.6
+      ],
+      "winner": "sniper"
+    },
+    {
+      "types": [
+        "striker",
+        "infantry"
+      ],
+      "counts": [
+        12,
+        20
+      ],
+      "spent": [
+        840,
+        900
+      ],
+      "seconds": 15.9,
+      "survivors": [
+        7,
+        0
+      ],
+      "remainingValue": [
+        108.6,
+        0
+      ],
+      "winner": "striker"
+    },
+    {
+      "types": [
+        "infantry",
+        "striker"
+      ],
+      "counts": [
+        20,
+        12
+      ],
+      "spent": [
+        900,
+        840
+      ],
+      "seconds": 15.8,
+      "survivors": [
+        0,
+        6
+      ],
+      "remainingValue": [
+        0,
+        149.7
+      ],
+      "winner": "striker"
+    },
+    {
+      "types": [
+        "tank",
+        "heavyTank"
+      ],
+      "counts": [
+        6,
+        3
+      ],
+      "spent": [
+        780,
+        720
+      ],
+      "seconds": 23.3,
+      "survivors": [
+        4,
+        0
+      ],
+      "remainingValue": [
+        413.3,
+        0
+      ],
+      "winner": "tank"
+    },
+    {
+      "types": [
+        "heavyTank",
+        "tank"
+      ],
+      "counts": [
+        3,
+        6
+      ],
+      "spent": [
+        720,
+        780
+      ],
+      "seconds": 26.25,
+      "survivors": [
+        0,
+        3
+      ],
+      "remainingValue": [
+        0,
+        336.6
+      ],
+      "winner": "tank"
+    },
+    {
+      "types": [
+        "infantry",
+        "rocketeer"
+      ],
+      "counts": [
+        20,
+        10
+      ],
+      "spent": [
+        900,
+        900
+      ],
+      "seconds": 11.9,
+      "survivors": [
+        18,
+        0
+      ],
+      "remainingValue": [
+        709,
+        0
+      ],
+      "winner": "infantry"
+    },
+    {
+      "types": [
+        "rocketeer",
+        "infantry"
+      ],
+      "counts": [
+        10,
+        20
+      ],
+      "spent": [
+        900,
+        900
+      ],
+      "seconds": 11.8,
+      "survivors": [
+        0,
+        18
+      ],
+      "remainingValue": [
+        0,
+        720.9
+      ],
+      "winner": "infantry"
+    },
+    {
+      "types": [
+        "scout",
+        "sniper"
+      ],
+      "counts": [
+        9,
+        11
+      ],
+      "spent": [
+        855,
+        880
+      ],
+      "seconds": 11.65,
+      "survivors": [
+        9,
+        0
+      ],
+      "remainingValue": [
+        672.1,
+        0
+      ],
+      "winner": "scout"
+    },
+    {
+      "types": [
+        "sniper",
+        "scout"
+      ],
+      "counts": [
+        11,
+        9
+      ],
+      "spent": [
+        880,
+        855
+      ],
+      "seconds": 12.2,
+      "survivors": [
+        0,
+        9
+      ],
+      "remainingValue": [
+        0,
+        666.6
+      ],
+      "winner": "scout"
+    }
+  ]
+}
