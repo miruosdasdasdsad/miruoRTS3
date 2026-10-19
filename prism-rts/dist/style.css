@@ -24,3 +24,12 @@ dialog{background:#18222c;color:var(--ink);border:1px solid #3e505e;border-radiu
 @media(orientation:landscape) and (max-height:560px){.capture-hud{top:41px;left:auto;right:12px;width:232px;padding:7px 9px}.capture-heading strong{font-size:10px}.capture-heading>span{font-size:9px}.capture-note{font-size:9px}.has-capture .battle-message{top:115px}}
 .lab-link,.debug-grid>a{display:inline-flex;align-items:center;justify-content:center;padding:8px 11px;border:1px solid #41685b;border-radius:5px;background:#1b2d29;color:#88e6c5;text-decoration:none;font-size:12px;white-space:nowrap}.lab-link:hover,.debug-grid>a:hover{background:#2a443b}.dialog-intro a{color:#88e6c5}#balance-status{color:#88e6c5}.result-lab{display:block;margin-top:10px;text-align:center;color:#88e6c5;font-size:13px}@media(max-width:760px){.lab-link{font-size:10px;padding:7px 6px}.top-actions{gap:4px}.top-actions .clock{display:none}.debug-button{font-size:10px;padding:7px 6px}}
 .core-drag-status{position:absolute;left:50%;bottom:149px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);padding:10px 15px;border:1px solid #649f8b;border-radius:7px;background:#142b29f5;box-shadow:0 0 26px #88e6c519;color:#c9f8e7;font-size:12px;line-height:1.7;text-align:center;pointer-events:none;z-index:5}.core-drag-status[data-valid=false]{border-color:#bc6975;background:#301f29f5;color:#ffc4ce}@media(max-width:760px){.core-drag-status{bottom:142px;font-size:11px;padding:7px 11px;max-width:calc(100% - 20px)}}
+
+.factory-tabs{grid-column:1/-1;display:flex;gap:5px;margin-bottom:2px}
+.factory-tabs button{flex:1;min-width:0;padding:5px 6px;min-height:31px;font-size:11px;border:1px solid #34414d;border-radius:5px;background:#1a232b;color:#9fb0ba;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.factory-tabs button.active{border-color:var(--mint);background:#1f2f2c;color:#d8f3ea}
+.factory-tabs button.busy:after{content:'●';margin-left:5px;font-size:8px;color:var(--mint);vertical-align:1px}
+@media(max-width:760px){.factory-tabs button{min-height:29px;font-size:10px;padding:4px 5px}}
+@media(orientation:landscape) and (max-height:560px){.factory-tabs button{min-height:27px;font-size:10px}}
+
+.actions-section.is-empty{display:none!important}

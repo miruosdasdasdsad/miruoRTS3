@@ -32,21 +32,21 @@
         </div>
         <div class="result-card" id="result-card" hidden></div>
         <div class="minimap-box"><canvas id="minimap" aria-label="点击小地图移动视角"></canvas><div class="map-legend"><span><i class="friendly"></i>我方</span><span><i class="hostile"></i>敌方</span><span><i class="neutral"></i>中立</span></div></div>
-        <div class="view-controls"><button id="home-btn" title="返回基地（H）" aria-label="返回基地">⌂</button><button id="overview-btn" title="缩放以查看完整战场，保留选择" aria-label="查看全图，保留当前选择">全图</button><button id="zoom-out" aria-label="缩小">−</button><span id="zoom-label">70%</span><button id="zoom-in" aria-label="放大">+</button></div>
+        <div class="view-controls"><button id="orientation-btn" title="全屏横屏（锁定方向）" aria-label="全屏横屏并锁定方向" aria-pressed="false">⛶</button><button id="home-btn" title="返回基地（H）" aria-label="返回基地">⌂</button><button id="overview-btn" title="缩放以查看完整战场，保留选择" aria-label="查看全图，保留当前选择">全图</button><button id="zoom-out" aria-label="缩小">−</button><span id="zoom-label">70%</span><button id="zoom-in" aria-label="放大">+</button></div>
         <div class="command-bar"><button id="select-army"><span>⬡</span> 全选部队</button><button id="attack-btn"><span>⌖</span> 攻击移动</button><button id="stop-btn"><span>□</span> 停止</button><button id="deselect-btn"><span>×</span> 取消选择</button></div>
         <div class="battle-footer"><span><i></i> 本地战役 <span class="slash">/</span> <span id="ai-label">标准 AI</span> · <span id="fog-status">迷雾开启</span></span><span class="desktop-hint">左键下令 · 长按调核 · 右键取消 / 右拖平移</span><span class="mobile-hint">长按调核 · 拖动平移 · 双指缩放</span></div>
       </section>
       <aside class="sidebar">
         <div class="sidebar-heading"><span>指挥</span><button id="panel-toggle" class="icon-button" aria-label="展开或收起操作面板">⌃</button></div>
         <section class="production-section">
-          <div class="section-heading"><h2>基地生产</h2><span>左键生产 · 右键暂停 / 取消</span></div>
+          <div class="section-heading"><h2>基地生产</h2></div>
           <div class="production-tabs" role="tablist" aria-label="建造与生产分类"><button role="tab" data-production-tab="buildings" aria-selected="true">建筑</button><button role="tab" data-production-tab="defense" aria-selected="false">防御</button><button role="tab" data-production-tab="technology" aria-selected="false">科技</button><button role="tab" data-production-tab="infantry" aria-selected="false">步兵</button><button role="tab" data-production-tab="vehicles" aria-selected="false">战车</button></div>
           <div id="technology-summary" class="technology-summary" aria-label="全军科技状态"></div>
           <div id="production-actions" class="action-grid"></div><div id="production-queue"></div>
         </section>
-        <section class="core-section"><div class="section-heading"><h2>能量核心 <span id="core-total">03</span></h2><span class="rate" id="rate-label">+6 / 秒 / 核心</span></div><div id="cores" class="core-list"></div><p class="core-hint">长按建筑抓取核心，拖到建筑接入或换核，拖到空地储能。电场无插槽。</p></section>
+        <section class="core-section"><div class="section-heading"><h2>能量核心 <span id="core-total">03</span></h2><span class="rate" id="rate-label">+6 / 秒 / 核心</span></div><div id="cores" class="core-list"></div></section>
         <section class="selection-section"><div class="section-heading"><h2>当前选择</h2><span id="selection-counter">01 SELECTED</span></div><div id="selection"></div></section>
-        <section class="actions-section"><div class="section-heading"><h2 id="action-heading">建造蓝图</h2><span id="action-subheading">消耗建造厂核心能量</span></div><div id="actions" class="action-grid"></div><div id="queue"></div></section>
+        <section class="actions-section"><div class="section-heading"><h2 id="action-heading">建造蓝图</h2></div><div id="actions" class="action-grid"></div><div id="queue"></div></section>
         <details class="log-section"><summary>战场动态</summary><div id="event-log"></div></details>
       </aside>
     </main>
@@ -71,6 +71,7 @@
     <h3>核心拖动与直接换核</h3><p>长按已接入核心的己方建筑约 <b>0.38 秒</b>，进度环完成后选中内部核心。继续拖动，松在有插槽的己方建筑上即可调度；两栋建筑都有核心时，两个核心互换建筑。地面核心可以直接拖动，拖入已占用建筑时，原核心卸到建筑旁。拖到可通行空地则移动储能。拖动只做预览，<b>松手后才卸载和出发</b>；原地松开仅选中，松到无效目标保持原任务。右键、Esc 或双指操作取消拖动。核心实际移动后才接入，交换途中两栋建筑的任务暂停、进度保留。原有核心卡片与目标按钮同样支持换核。</p>
     <p>核心具有能量光晕和移动尾迹；接入建筑显示相同能量色的插槽与结构光纹，工作时流动，待机时缓慢呼吸，停电时减弱。移走核心后接入光渐隐，电场与防御塔无需核心。</p>
     <h3>手机触控</h3><p>单指拖动平移，双指缩放；长按有核心的建筑后拖动可调度核心，地面核心可直接拖动。点击核心卡片，再点击己方建筑也能装载或换核。点击底部“全选部队”，再点地面或敌人下令；点击上方中心据点倒计时可直接定位，随后点击圆环派兵占领。未选部队时，点击中立建筑、核心或据点可查看详细规则。使用“取消选择”取消，或使用模式横条退出模式。建筑先点击生产，就绪后再次点击放置。可展开底部指挥终端，横屏更便于指挥。</p>
+    <p>点击战场右下角视图控制里的 <b>⛶</b> 进入全屏并调用屏幕方向锁定把画面锁成横屏，再点一次退出；进入全屏后浏览器会自动忽略系统旋转，退出全屏时解除锁定。若浏览器不支持屏幕方向锁定（例如 iPhone Safari），按钮仍会进入全屏，此时请关闭系统“自动旋转”再横握手机。</p>
     <h3>战争迷雾与侦察</h3><p>未探索区域遮黑；探索后离开视野会变成灰雾，保留已知地形。己方建筑、部队和游离核心提供圆形视野，侦察车视野最广；核心装入建筑后共用建筑视野。敌军和地面核心只有在当前视野内才显示、可点选和锁定攻击，小地图遵守相同规则。敌人脱离视野后，部队只向最后收到的地点前进，不会追踪迷雾中的位置。已发现建筑在灰雾中留下“上次发现”轮廓，再次侦察后更新。</p>
     <p>中央据点位置始终标记，视野外隐藏归属和倒计时。可以直接向黑雾或灰雾下达移动、攻击移动与集结指令，派侦察车提前探路，或让前排部队为远程火炮提供视野。湖泊与岩壁沿用原有通行规则，本版圆形视野不受地形遮挡。右上角调试面板可关闭战争迷雾观察全图；重新开始会恢复默认迷雾，关闭不会自动把全图记为已探索。</p>
     <h3>战斗与调试</h3><p>AI 与玩家采用相同资源、造价、核心和视野规则；难度仅影响进攻节奏。核心不会被武器摧毁，建筑被毁时核心会弹出；任一方建造厂被摧毁即判定胜负。右上角调试面板可暂停 AI、加速、补充指定核心能量、生成测试部队和导出状态。</p>

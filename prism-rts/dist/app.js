@@ -16,14 +16,14 @@ let activeSavedMap=readSavedMap();
 let world=new World({balance:activeSavedBalance||{},map:activeSavedMap}),started=false,paused=true,speed=1,mode=null,lastUI=0,accumulator=0,seenEvent=null,resultShown=false;
 let BUILDINGS=world.buildings,UNITS=world.units,recorder=new MatchRecorder(world),lastReportSave=-Infinity,reportStorageWarning=false;
 const technologyTypes=Object.keys(BUILDINGS).filter(type=>BUILDINGS[type].technology);
-let productionTab='buildings',sameType=null;
+let productionTab='buildings',sameType=null,facilityPick={};
 const canvas=$('#game'),renderer=new Renderer(canvas,$('#minimap'),()=>world),selection=renderer.selected;
 selection.add(world.base(0).id);
 let toastTimer,alertTimer;
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3000);}
 function alert(message){$('#battle-message').textContent=message;$('#battle-message').classList.add('show');clearTimeout(alertTimer);alertTimer=setTimeout(()=>$('#battle-message').classList.remove('show'),5500);}
 function selected(){return [...selection].map(id=>world.byId(id)).filter(entity=>world.canSee(0,entity));}
-function select(ids,append=false,toggle=false){if(!append||selected().some(e=>e.kind!=='unit'||e.team!==0))selection.clear();ids.forEach(id=>{if(toggle&&selection.has(id))selection.delete(id);else selection.add(id);});const e=selected()[0];if(e?.team===0&&e.kind==='building'){if(['barracks','factory'].includes(e.type))productionTab=e.type==='barracks'?'infantry':'vehicles';else if(BUILDINGS[e.type].technology)productionTab='technology';}const showObjective=e&&innerWidth<=760&&(e.kind==='capture'||e.team===-1);if(showObjective){$('.sidebar').classList.add('expanded');$('#panel-toggle').textContent='⌄';}sameType=null;cancelMode();updateUI(true);if(showObjective)$('.selection-section').scrollIntoView({block:'nearest'});}
+function select(ids,append=false,toggle=false){if(!append||selected().some(e=>e.kind!=='unit'||e.team!==0))selection.clear();ids.forEach(id=>{if(toggle&&selection.has(id))selection.delete(id);else selection.add(id);});const e=selected()[0];if(e?.team===0&&e.kind==='building'){if(['barracks','factory'].includes(e.type)){productionTab=e.type==='barracks'?'infantry':'vehicles';facilityPick[productionTab]=e.id;}else if(BUILDINGS[e.type].technology)productionTab='technology';}const showObjective=e&&innerWidth<=760&&(e.kind==='capture'||e.team===-1);if(showObjective){$('.sidebar').classList.add('expanded');$('#panel-toggle').textContent='⌄';}sameType=null;cancelMode();updateUI(true);if(showObjective)$('.selection-section').scrollIntoView({block:'nearest'});}
 function ensureStarted(){if(!started){toast('先点击“开始作战”进入战役');return false;}if(world.result){toast('本局已结束，可以重新开始');return false;}return true;}
 function focus(e){if(e){renderer.camera.x=e.x;renderer.camera.y=e.y;renderer.clampCamera();}}
 function focusCapture(){if(world.capturePoint){focus(world.capturePoint);collapseMobile();toast(`中心据点：派部队进入圆环，独占每 ${world.capturePoint.duration} 秒获得 1 个核心`);}}
@@ -44,7 +44,7 @@ function collapseMobile(){if(innerWidth<=760){$('.sidebar').classList.remove('ex
 function setMode(value){mode=value;renderer.placement=null;$('#mode-banner').hidden=!mode;$('#attack-btn').classList.toggle('active',mode?.kind==='attack');canvas.style.cursor=mode?'crosshair':'default';$('#cancel-mode').textContent=mode?.kind==='waypoints'?'结束追加':'取消 ×';$('#deselect-btn').innerHTML=`<span>×</span> ${mode?'取消模式':'取消选择'}`;if(mode)$('#mode-text').textContent=mode.kind==='build'?`${BUILDINGS[mode.type].name}已就绪 · 左键放置 / 右键退出`:mode.kind==='rally'?'左键点空地设置集结点 · 右键取消':mode.kind==='waypoints'?'左键依次追加指令 · 右键结束追加':'左键攻击移动 · 右键取消';}
 function cancelMode(){setMode(null);}
 function start(){if(started)return;if(JSON.stringify(readSavedBalance())!==JSON.stringify(activeSavedBalance)||JSON.stringify(readSavedMap())!==JSON.stringify(activeSavedMap))reset();const d=$('#difficulty').value;world.config.difficulty=d;world.nextRaid=d==='easy'?180:d==='hard'?80:120;started=true;paused=false;$('#start-card').hidden=true;renderer.home();alert('先建电场与兵营，再按地图布局探索资源、展开进攻。');world.log(`建议先建电场、兵营并接入核心。${world.capturePoint?`独占据点每 ${world.capturePoint.duration} 秒再得一个核心。`:'本地图未设置占领据点。'}`);persistReport(true);updateUI(true);}
-function reset(){cancelCoreGesture();persistReport(true);recorder.dispose();activeSavedBalance=readSavedBalance();activeSavedMap=readSavedMap();world=new World({difficulty:$('#difficulty').value,balance:activeSavedBalance||{},map:activeSavedMap});BUILDINGS=world.buildings;UNITS=world.units;recorder=new MatchRecorder(world);lastReportSave=-Infinity;reportStorageWarning=false;started=false;paused=true;accumulator=0;speed=1;resultShown=false;seenEvent=null;productionTab='buildings';sameType=null;selectionKey='';actionKey='';renderedProduction='';renderedProductionQueue='';selection.clear();selection.add(world.base(0).id);cancelMode();renderer.home();$('#start-card').hidden=false;$('#result-card').hidden=true;$('#game-speed').value='1';$('#energy-rate').value=world.config.rate;$('#ai-enabled').checked=true;$('#god-mode').checked=false;for(const d of document.querySelectorAll('dialog'))d.close();updateBalanceNotice();updateUI(true);}
+function reset(){cancelCoreGesture();persistReport(true);recorder.dispose();activeSavedBalance=readSavedBalance();activeSavedMap=readSavedMap();world=new World({difficulty:$('#difficulty').value,balance:activeSavedBalance||{},map:activeSavedMap});BUILDINGS=world.buildings;UNITS=world.units;recorder=new MatchRecorder(world);lastReportSave=-Infinity;reportStorageWarning=false;started=false;paused=true;accumulator=0;speed=1;resultShown=false;seenEvent=null;productionTab='buildings';sameType=null;facilityPick={};selectionKey='';actionKey='';renderedProduction='';renderedProductionQueue='';selection.clear();selection.add(world.base(0).id);cancelMode();renderer.home();$('#start-card').hidden=false;$('#result-card').hidden=true;$('#game-speed').value='1';$('#energy-rate').value=world.config.rate;$('#ai-enabled').checked=true;$('#god-mode').checked=false;for(const d of document.querySelectorAll('dialog'))d.close();updateBalanceNotice();updateUI(true);}
 function persistReport(force=false){
   if(!started||(!force&&world.time-lastReportSave<5))return;
   lastReportSave=world.time;
@@ -70,7 +70,7 @@ function allArmy(){if(!ensureStarted())return;const a=world.all(0,'unit');if(!a.
 function attackMode(){if(!ensureStarted())return;if(!selected().some(e=>e.kind==='unit'&&e.team===0)){toast('请先选择要攻击移动的部队');return;}setMode(mode?.kind==='attack'?null:{kind:'attack'});collapseMobile();}
 function selectType(){const unit=selected().find(e=>e.kind==='unit'&&e.team===0);if(!unit)return;const wholeMap=sameType===unit.type;select(world.all(0,'unit').filter(e=>e.type===unit.type&&(wholeMap||renderer.visible(e.x,e.y,0))).map(e=>e.id));sameType=unit.type;toast(wholeMap?'已选择全地图同类单位':'已选择画面内同类单位，再点一次选择全地图');}
 function waypointMode(){if(!ensureStarted())return;if(!selected().some(e=>e.team===0&&e.kind==='unit')){toast('请先选择部队');return;}setMode(mode?.kind==='waypoints'?null:{kind:'waypoints'});collapseMobile();}
-function showProduction(id){const b=world.byId(id);if(!b||b.team!==0||b.construction||!['barracks','factory'].includes(b.type))return;productionTab=b.type==='barracks'?'infantry':'vehicles';updateUI(true);document.querySelector(`[data-factory="${b.id}"]`)?.scrollIntoView({block:'nearest'});}
+function showProduction(id){const b=world.byId(id);if(!b||b.team!==0||b.construction||!['barracks','factory'].includes(b.type))return;productionTab=b.type==='barracks'?'infantry':'vehicles';facilityPick[productionTab]=b.id;updateUI(true);document.querySelector(`[data-factory="${b.id}"]`)?.scrollIntoView({block:'nearest'});}
 function produce(id,type,right=false){
   if(!ensureStarted())return;const result=productionOrder(world,id,type,right);toast(result.message||result.reason);
   updateUI(true);
@@ -107,38 +107,37 @@ function technologySummary(){
 }
 function selectionUI(force){
   const sel=selected(),e=sel[0],count=sel.length;$('#selection-counter').textContent=`${String(count).padStart(2,'0')} SELECTED`;
-  if(!e){$('#selection').innerHTML='<p class="hint-box">点选建筑、部队，或上方的核心卡片。</p>';selectionKey='';actionsUI(null,force);return;}
+  if(!e){$('#selection').innerHTML='';selectionKey='';actionsUI(null,force);return;}
   const key=`${count}:${e.id}:${e.core}:${e.dock}:${e.kind}:${e.type}:${e.team}:${e.serial}`;
   if(key!==selectionKey||force){selectionKey=key;const d=BUILDINGS[e.type]||UNITS[e.type],faction=e.team===1?'敌方 · ':e.team===-1?'中立 · ':'',title=count>1?`${count} 个作战单位`:e.kind==='capture'?'中心据点':e.kind==='core'?e.team===-1?'中立 · 待认领核心':`${faction}能量核心 ${String(e.serial).padStart(2,'0')}`:`${faction}${d.name}`;$('#selection').innerHTML=`<div class="selection-head"><div class="unit-emblem" style="color:${e.team===-1?'#e9c779':d?.color||'#79edcc'}">${count>1?'⬡':icons[e.type]}</div><div class="selection-name">${title}<span class="selection-en">${count>1?'COMBAT GROUP':e.kind==='capture'?'CENTRAL CORE RELAY':d?.en||'INDEPENDENT ENERGY CORE'}</span></div></div><div class="health-row"><span>${e.kind==='capture'?'本轮占领进度':e.kind==='core'?'独立存储 / 无上限':'结构完整度'}</span><span id="selection-hp"></span></div><div class="bar"><i id="selection-health"></i></div><div id="selection-slot"></div><p class="status-line" id="selection-status"></p>`;}
   const hp=sel.reduce((s,e)=>s+e.hp,0),maxHp=sel.reduce((s,e)=>s+e.maxHp,0);$('#selection-hp').textContent=e.kind==='capture'?`${Math.floor(e.progress)} / ${e.duration} 秒`:e.kind==='core'?`${e.energy} E`:`${Math.ceil(hp)} / ${maxHp}`;$('#selection-health').style.width=`${e.kind==='capture'?clamp(e.progress/e.duration,0,1)*100:e.kind==='core'?100:hp/maxHp*100}%`;
   let slot='',status='',warn=false;
-  if(count>1)status='点空地移动 · 点敌人集火 · Shift 下令追加路径';
+  if(count>1)status='';
   else if(e.kind==='capture'){
     slot=`<div class="objective-detail"><strong>${captureStatus(e)} · 剩余 ${fmt(Math.max(0,Math.ceil(e.duration-e.progress)))}</strong><span>圈内兵力：我方 ${e.occupants[0]} / 敌方 ${e.occupants[1]}</span><span>累计核心：我方 +${e.rewards[0]} / 敌方 +${e.rewards[1]}</span></div>`;
-    status=`仅作战部队参与占领。独占满 ${world.capturePoint.duration} 秒产生一个己方核心并开始下一轮；双方在场暂停，无人或换边清零。`;warn=e.contested;
+    status='';warn=e.contested;
   }else if(e.team===-1&&e.kind==='core'){
     const nearby=world.all(null,'unit').filter(u=>Math.hypot(u.x-e.x,u.y-e.y)<=65),contested=nearby.some(u=>u.team===0)&&nearby.some(u=>u.team===1);
-    slot='<div class="objective-detail"><strong>可拾取 · 新增一个独立核心</strong><span>未认领时不产能；拾取后从 0 能量开始积累。</span></div>';
-    status=contested?'双方部队都在 65 范围内，暂不能拾取；先清除附近敌军。':'选己方部队后点击此核心，靠近 65 范围内自动认领。能量核心本身不能拾取。';warn=contested;
+    slot='';status=contested?'争夺中':'';warn=contested;
   }else if(e.team===-1&&e.kind==='building'){
-    slot='<div class="objective-detail"><strong>摧毁奖励 · 掉落 1 个中立核心</strong></div>';status='选部队后左键点击此建筑集中攻击。摧毁后派兵靠近掉落核心认领；部队不会自动攻击中立建筑。';
+    slot='';status='';
   }
   else if(e.kind==='building'){
     const d=BUILDINGS[e.type],core=world.byId(e.core),site=e.type==='hq'?world.activeConstruction(e):null;
-    if(site){warn=site.remaining>0&&(site.paused||!world.constructionHasCore(site)||!site.paidCore);status=site.remaining===0?`${BUILDINGS[site.type].name}已就绪，请在生产侧栏点击图标放置。`:site.paused?'建造已手动暂停，点击生产图标继续。':!world.constructionHasCore(site)?'建造已暂停：请给建造厂接入核心。':!site.paidCore?'建造等待：建造厂核心能量不足。':`正在生产${BUILDINGS[site.type].name} · 还需 ${Math.ceil(site.remaining)} 秒`;}
-    else if(d.technology){status=`建成已永久解锁：${d.unlocks.map(type=>UNITS[type].name).join('、')}。研发完成后强化已有与后续全部部队。`;}
-    else if(!e.powered){status='电力不足，功能暂停。请建设更多电场。';warn=true;}
-    else if(e.type==='power')status='持续提供 36 电力 · 无核心插槽 · 无运行能量消耗';
-    else if(e.type==='tower')status='电力驱动 · 自动防御 · 不消耗核心能量';
-    else if(!core){status='缺少能量核心。选择上方核心，再点此建筑装入。';warn=true;}
-    else if(e.job&&world.all(e.team,'unit').length>=60){status='部队达到 60 上限，等待空位。';warn=true;}
-    else if(e.job)status=e.job.paused?'生产已手动暂停，点击单位图标继续。':`生产${UNITS[e.job.type].name} · 剩余 ${Math.ceil(e.job.remaining)} 秒`;
-    else if(e.queue.length&&world.all(e.team,'unit').length>=60){status='部队达到 60 上限，订单等待中。';warn=true;}
-    else if(e.queue.length&&core.energy<UNITS[e.queue[0]].cost){status=`能量不足，等待 ${UNITS[e.queue[0]].cost-core.energy} 点后自动生产。`;warn=true;}
-    else status=e.type==='hq'?'待机不耗能 · 在基地生产侧栏建造建筑。':'独立生产队列 · 左键点空地设置集结点';
+    if(site){warn=site.remaining>0&&(site.paused||!world.constructionHasCore(site)||!site.paidCore);status=site.remaining===0?`${BUILDINGS[site.type].name}已就绪`:site.paused?'建造暂停':!world.constructionHasCore(site)?'缺核心':!site.paidCore?'缺能量':`${BUILDINGS[site.type].name} · ${Math.ceil(site.remaining)}s`;}
+    else if(d.technology){status=`已解锁 ${d.unlocks.map(type=>UNITS[type].name).join('/')}`;}
+    else if(!e.powered){status='电力不足';warn=true;}
+    else if(e.type==='power')status='供电 +36';
+    else if(e.type==='tower')status='自动防御';
+    else if(!core){status='缺核心';warn=true;}
+    else if(e.job&&world.all(e.team,'unit').length>=60){status='60 上限';warn=true;}
+    else if(e.job)status=e.job.paused?'已暂停':`${UNITS[e.job.type].name} · ${Math.ceil(e.job.remaining)}s`;
+    else if(e.queue.length&&world.all(e.team,'unit').length>=60){status='60 上限';warn=true;}
+    else if(e.queue.length&&core.energy<UNITS[e.queue[0]].cost){status=`缺 ${UNITS[e.queue[0]].cost-core.energy} 能量`;warn=true;}
+    else status='';
     if(d.acceptsCore)slot=`<div class="slot"><span>${core?`◇ 核心 ${String(core.serial).padStart(2,'0')} · ${core.energy} E`:'◇ 空核心插槽'}</span>${e.team?'':core?`<button data-eject="${core.id}">卸载</button>`:`<button data-choose-core="${e.id}">装载</button>`}</div>`;
     if(d.technology&&!e.construction)slot+=researchPanel(e);
-  }else if(e.kind==='core'){const b=world.byId(e.dock),t=world.byId(e.targetDock);slot=`<div class="slot"><span>${b?`已装入${BUILDINGS[b.type].name}`:t?`前往${BUILDINGS[t.type].name}`:'游离核心 · 可以移动'}</span>${b&&e.team===0?`<button data-eject="${e.id}">卸载</button>`:''}</div>`;status=e.team===0?`每秒 +${world.config.rate} 整数能量。点有插槽的己方建筑装入；电场无法装载。`:'敌方已认领的核心，无法攻击或夺取。';}else{const stats=world.unitStats(e);status=`${UNITS[e.type].role} · ${Number(stats.damage.toFixed(1))} 伤害 · ${stats.range} 射程 · ${Number(stats.speed.toFixed(1))} 速度${stats.incomingDamage<1?` · ${Math.round((1-stats.incomingDamage)*100)}% 减伤`:''} · ${e.orders.length?`${e.orders.length} 条后续指令`:'Shift 下令追加路径'}`;}
+  }else if(e.kind==='core'){const b=world.byId(e.dock),t=world.byId(e.targetDock);slot=`<div class="slot"><span>${b?`已装入${BUILDINGS[b.type].name}`:t?`前往${BUILDINGS[t.type].name}`:'游离核心 · 可以移动'}</span>${b&&e.team===0?`<button data-eject="${e.id}">卸载</button>`:''}</div>`;status=e.team===0?`+${world.config.rate} / 秒`:'敌方核心';}else{const stats=world.unitStats(e);status=`${UNITS[e.type].role} · ${Number(stats.damage.toFixed(1))} 伤害 · ${stats.range} 射程 · ${Number(stats.speed.toFixed(1))} 速度${stats.incomingDamage<1?` · ${Math.round((1-stats.incomingDamage)*100)}% 减伤`:''}${e.orders.length?` · ${e.orders.length} 条指令`:''}`;}
   if(count===1&&e.team===0&&e.kind==='unit')status+=` · ${visionRadius(e)} 视野`;
   if($('#selection-slot').innerHTML!==slot)$('#selection-slot').innerHTML=slot;$('#selection-status').textContent=status;$('#selection-status').classList.toggle('warn',warn);actionsUI(e,force);
 }
@@ -146,20 +145,21 @@ function actionsUI(e,force){
   const owned=e?.team===0,kind=owned?e.kind:'none',type=owned?e.type:'none';
   const buildings=world.all(0,'building').filter(b=>!b.construction).map(b=>`${b.id}:${b.core}`).join(',');
   const key=`${kind}:${type}:${e?.id}:${!!e?.construction}:${mode?.type}:${buildings}`;
-  if(key!==actionKey||force){actionKey=key;let html='';$('#action-subheading').textContent='';
-    if(!e||(owned&&type==='hq')){$('#action-heading').textContent='选择与指挥';html='<p class="hint-box">基地生产侧栏始终可用。左键选择和下令，右键取消选择。</p>';}
-    else if(e.kind==='capture'){$('#action-heading').textContent='中心据点';html=`<p class="hint-box">保持作战部队在圆环内。每 ${world.capturePoint.duration} 秒新增一个核心，核心不会被武器摧毁。</p><button class="action-wide" data-focus-capture>定位中心据点（C）</button><button class="action-wide" data-command="all">选择全军</button>`;}
-    else if(e.team===-1){$('#action-heading').textContent='中立目标';html=`<p class="hint-box">${e.kind==='core'?'选部队后点此核心，靠近自动拾取。双方同时靠近时需要先清除敌军。':'选部队后点此建筑下达攻击指令，摧毁后掉落一个可认领核心。'}</p><button class="action-wide" data-command="all">选择全军</button><button class="action-wide" data-select-base>返回建造厂</button>`;}
-    else if(!owned){$('#action-heading').textContent='敌方情报';html=`<p class="hint-box">${e.kind==='core'?'敌方核心无法攻击或夺取。':'选择己方部队，再点击此目标进行攻击。'}</p><button class="action-wide" data-select-base>返回建造厂</button>`;}
+  if(key!==actionKey||force){actionKey=key;let html='';
+    if(!e||(owned&&type==='hq')){$('#action-heading').textContent='选择与指挥';html='';}
+    else if(e.kind==='capture'){$('#action-heading').textContent='中心据点';html=`<button class="action-wide" data-focus-capture>定位中心据点（C）</button><button class="action-wide" data-command="all">选择全军</button>`;}
+    else if(e.team===-1){$('#action-heading').textContent='中立目标';html=`<button class="action-wide" data-command="all">选择全军</button><button class="action-wide" data-select-base>返回建造厂</button>`;}
+    else if(!owned){$('#action-heading').textContent='敌方情报';html=`<button class="action-wide" data-select-base>返回建造厂</button>`;}
     else if(e.construction){$('#action-heading').textContent='施工管理';html='<button class="action-wide" data-select-base>前往建造厂 · 管理施工核心</button>';}
-    else if(kind==='core'){$('#action-heading').textContent='调度核心';$('#action-subheading').textContent='长按建筑取核 · 拖动调度';html=world.all(0,'building').filter(b=>!b.construction&&BUILDINGS[b.type].acceptsCore).map(b=>{const d=BUILDINGS[b.type],busy=b.core&&b.core!==e.id,reserved=world.cores(0).some(c=>c.targetDock===b.id&&c.id!==e.id);return `<button class="build-card" data-dock="${b.id}" ${reserved||b.core===e.id?'disabled':''} style="--accent:${d.color}"><span class="card-icon">${icons[b.type]}</span><strong>${d.name}</strong><span class="card-cost">${b.core===e.id?'当前装载':reserved?'插槽已预留':busy?e.dock?'交换核心':'替换核心':d.technology?'接入以研发科技':'装入此建筑'}</span></button>`;}).join('');html+='<button class="action-wide" data-select-base>选择建造厂 · 建造建筑</button>';}
+    else if(kind==='core'){$('#action-heading').textContent='调度核心';html=world.all(0,'building').filter(b=>!b.construction&&BUILDINGS[b.type].acceptsCore).map(b=>{const d=BUILDINGS[b.type],busy=b.core&&b.core!==e.id,reserved=world.cores(0).some(c=>c.targetDock===b.id&&c.id!==e.id);return `<button class="build-card" data-dock="${b.id}" ${reserved||b.core===e.id?'disabled':''} style="--accent:${d.color}"><span class="card-icon">${icons[b.type]}</span><strong>${d.name}</strong><span class="card-cost">${b.core===e.id?'当前装载':reserved?'插槽已预留':busy?e.dock?'交换核心':'替换核心':d.technology?'接入以研发科技':'装入此建筑'}</span></button>`;}).join('');html+='<button class="action-wide" data-select-base>选择建造厂 · 建造建筑</button>';}
     else if(['barracks','factory'].includes(type)){$('#action-heading').textContent='工厂指挥';html=`<button data-rally="${e.id}">设置集结点</button><button data-show-production="${e.id}">查看独立队列</button>`;}
     else if(kind==='unit'){$('#action-heading').textContent='部队指令';html='<button data-command="attack">⌖ 攻击移动</button><button data-command="stop">□ 停止 / 驻守</button><button data-command="type">选择同类</button><button data-command="waypoints">连续指令</button>';}
-    else if(BUILDINGS[type]?.technology){$('#action-heading').textContent='科技建筑';html='<p class="hint-box">建成永久解锁兵种。接入核心后选择科技，支付能量开始研发；完成后全军永久生效。研发期间移走核心或停电会暂停。</p><button class="action-wide" data-production-tab="technology">查看科技与研发</button>';}
-    else{$('#action-heading').textContent='建筑运行';html=`<p class="hint-box">${type==='power'?'电场建成后持续供电，不需要装载核心。':'防御塔自动攻击射程内敌人，只需电力。'}</p><button class="action-wide" data-select-base>返回建造厂 · 建造建筑</button>`;}
-    $('#actions').innerHTML=html;
+    else if(BUILDINGS[type]?.technology){$('#action-heading').textContent='科技建筑';html='<button class="action-wide" data-production-tab="technology">查看科技与研发</button>';}
+    else{$('#action-heading').textContent='建筑运行';html=`<button class="action-wide" data-select-base>返回建造厂 · 建造建筑</button>`;}
+    const actions=document.querySelector('.actions-section');actions.classList.toggle('is-empty',!html);$('#actions').innerHTML=html;
   }
 }
+function facilityLabel(b,peers){const list=peers||productionFacilities(world,productionUnits(b.type)[0]);return `${BUILDINGS[b.type].name} ${String(list.indexOf(b)+1).padStart(2,'0')}`;}
 function productionUI(){
   for(const tab of document.querySelectorAll('[role="tab"][data-production-tab]')){const active=tab.dataset.productionTab===productionTab;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));}
   let html='',queue='',facilities=[];
@@ -168,26 +168,28 @@ function productionUI(){
     html=(productionTab==='buildings'?['power','barracks','factory']:productionTab==='technology'?technologyTypes:['tower']).map(type=>{
       const d=BUILDINGS[type],job=buildJob?.type===type?buildJob:null;
       const state=job?job.remaining===0?'就绪 · 点击放置':job.paused?'已暂停 · 点击继续':!world.constructionHasCore(job)?'等待核心':!job.paidCore?'等待能量':`建造中 ${Math.ceil(job.remaining)}s`:`${d.time} 秒`;
-      return `<button class="build-card ${job?'active':''} ${world.energyFor(hq)<d.cost&&!job?'unaffordable':''}" data-build="${type}" style="--accent:${d.color}" title="${d.name}：左键生产或放置，右键暂停或取消"><span class="card-icon">${icons[type]}</span><strong>${d.name}</strong><span class="card-cost"><b>◇ ${d.cost}</b><em>ϟ ${d.power<0?'+'+-d.power:'−'+d.power}</em></span>${d.unlocks?`<small class="unit-role">解锁 ${d.unlocks.map(t=>UNITS[t].name).join(' / ')}</small>`:''}<small class="production-state">${state}</small></button>`;
+      return `<button class="build-card ${job?'active':''} ${world.energyFor(hq)<d.cost&&!job?'unaffordable':''}" data-build="${type}" style="--accent:${d.color}" title="${d.name}：左键生产或放置，右键暂停或取消"><span class="card-icon">${icons[type]}</span><strong>${d.name}</strong><span class="card-cost"><b>◇ ${d.cost}</b><em>ϟ ${d.power<0?'+'+-d.power:'−'+d.power}</em></span><small class="production-state">${state}</small></button>`;
     }).join('');
     if(buildJob){const d=BUILDINGS[buildJob.type],ready=buildJob.remaining===0;
-      queue=`<div class="queue-title">${d.name} · ${ready?'就绪':`${Math.ceil(buildJob.remaining)} 秒`}</div><div class="bar"><i style="width:${(1-buildJob.remaining/buildJob.total)*100}%"></i></div><p class="queue-progress">${ready?'点击图标后左键放置，右键退出放置模式。':buildJob.paused?'手动暂停':!world.constructionHasCore(buildJob)?'等待建造厂接入核心':!buildJob.paidCore?'等待建造厂核心能量':'建造中 · 建造厂需保持核心接入'}</p><div class="production-controls">${ready?`<button data-build="${buildJob.type}">放置建筑</button>`:`<button data-build-toggle>${buildJob.paused?'继续':'暂停'}</button>`}<button data-build-cancel>取消建造</button></div>`;
-    }else queue='<p class="queue-progress">先点击生产，完成后点击“就绪”图标放置。</p>';
+      queue=`<div class="queue-title">${d.name} · ${ready?'就绪':`${Math.ceil(buildJob.remaining)} 秒`}</div><div class="bar"><i style="width:${(1-buildJob.remaining/buildJob.total)*100}%"></i></div><div class="production-controls">${ready?`<button data-build="${buildJob.type}">放置建筑</button>`:`<button data-build-toggle>${buildJob.paused?'继续':'暂停'}</button>`}<button data-build-cancel>取消建造</button></div>`;
+    }
     if(productionTab==='technology'){
-      queue+='<p class="technology-explainer">建成永久解锁对应兵种；接入核心、支付能量并完成研发后，科技立即永久强化全部已有及新生产部队。</p>';
       for(const type of technologyTypes){const d=BUILDINGS[type],buildings=world.all(0,'building').filter(b=>b.type===type&&!b.construction);
         if(buildings.length)queue+=buildings.map(b=>`<div class="technology-building"><div class="factory-heading"><strong>${d.name} #${b.id}</strong><button data-view-producer="${b.id}">定位</button></div>${researchPanel(b)}</div>`).join('');
-        else queue+=`<div class="technology-preview"><strong>${d.technology.name} · ◇ ${d.technology.cost} · ${d.technology.time} 秒</strong><p>${d.technology.description}</p><small>${world.technologyActive(0,type)?'✓ 已研发 · 全军永久生效':`需建成${d.name}并接入核心`}</small></div>`;
+        else queue+=`<div class="technology-preview"><strong>${d.technology.name} · ◇ ${d.technology.cost} · ${d.technology.time} 秒</strong><p>${d.technology.description}</p><small>${world.technologyActive(0,type)?'✓ 已研发':'未研发'}</small></div>`;
       }
     }
   }else{
-    const type=productionTab==='infantry'?'infantry':'tank',d=UNITS[type],types=productionUnits(d.producer);facilities=productionFacilities(world,type);
-    html=facilities.map(b=>{
-      const name=`${BUILDINGS[b.type].name} #${b.id}`;
-      const unitCards=types.map(unitType=>{const unit=UNITS[unitType];return `<button class="build-card" data-produce="${unitType}" data-producer="${b.id}" aria-label="${name}：生产${unit.name}" style="--accent:${unit.color}" title="仅对${name}下单；右键减少同兵种等待订单或暂停 / 取消"><span class="card-icon">${icons[unitType]}</span><strong>${unit.name}</strong><small class="unit-role">${unit.role}</small><span class="card-cost"><b>◇ ${unit.cost}</b><em>${unit.time} 秒</em></span><small class="production-state" data-factory-unit-state="${unitType}"></small></button>`;}).join('');
-      return `<section class="factory-production" data-factory="${b.id}" aria-label="${name}独立生产"><div class="factory-heading"><strong>${name}</strong><button data-view-producer="${b.id}" aria-label="定位${name}">定位</button></div><div class="factory-resources"><span data-factory-core=""></span><span data-factory-count=""></span></div><div class="factory-unit-grid">${unitCards}</div><span class="queue-item current" data-factory-current="" hidden></span><div class="queue-items" data-factory-orders=""></div><div class="bar" data-factory-progress="" hidden><i></i></div><div class="production-controls" data-factory-job-controls="" hidden><button data-production-toggle="${b.id}">暂停</button><button data-production-cancel="${b.id}" aria-label="取消${name}当前生产">取消当前生产</button></div><p class="queue-progress" data-production-status=""></p><div class="production-controls"><button data-rally="${b.id}">设置集结点</button></div></section>`;
-    }).join('');
-    if(!facilities.length)html=`<p class="hint-box">先在“建筑”栏建造并放置${BUILDINGS[d.producer].name}，再生产${d.name}。</p>`;
+    const type=productionTab==='infantry'?'infantry':'tank',d=UNITS[type],types=productionUnits(d.producer),all=productionFacilities(world,type);
+    if(all.length){
+      let current=all.find(f=>f.id===facilityPick[productionTab]);
+      if(!current){current=all[0];facilityPick[productionTab]=current.id;}
+      const tabs=all.length>1?`<div class="factory-tabs" role="tablist" aria-label="选择第几座${BUILDINGS[current.type].name}">${all.map((b,i)=>`<button role="tab" data-factory-tab="${b.id}" aria-selected="${b.id===current.id}" class="${b.id===current.id?'active':''}${b.job||b.queue.length?' busy':''}" aria-label="第 ${i+1} 座${BUILDINGS[b.type].name}">${BUILDINGS[b.type].name} ${String(i+1).padStart(2,'0')}</button>`).join('')}</div>`:'';
+      const name=facilityLabel(current,all);
+      const unitCards=types.map(unitType=>{const unit=UNITS[unitType];return `<button class="build-card" data-produce="${unitType}" data-producer="${current.id}" aria-label="${name}：生产${unit.name}" title="仅对${name}下单；右键减少同兵种等待订单或暂停 / 取消"><span class="card-icon">${icons[unitType]}</span><strong>${unit.name}</strong><span class="card-cost"><b>◇ ${unit.cost}</b><em>${unit.time} 秒</em></span><small class="production-state" data-factory-unit-state="${unitType}"></small></button>`;}).join('');
+      html=tabs+`<section class="factory-production" data-factory="${current.id}" aria-label="${name}独立生产"><div class="factory-heading"><strong>${name}</strong><button data-view-producer="${current.id}" aria-label="定位${name}">定位</button></div><div class="factory-resources"><span data-factory-core=""></span><span data-factory-count=""></span></div><div class="factory-unit-grid">${unitCards}</div><span class="queue-item current" data-factory-current="" hidden></span><div class="queue-items" data-factory-orders=""></div><div class="bar" data-factory-progress="" hidden><i></i></div><div class="production-controls" data-factory-job-controls="" hidden><button data-production-toggle="${current.id}">暂停</button><button data-production-cancel="${current.id}" aria-label="取消${name}当前生产">取消</button></div><p class="queue-progress" data-production-status=""></p><div class="production-controls"><button data-rally="${current.id}">集结点</button></div></section>`;
+      facilities=[current];
+    }else html=`<p class="hint-box">先在“建筑”栏建造并放置${BUILDINGS[d.producer].name}。</p>`;
   }
   if(pointerOnQueue)return;
   if(renderedProduction!==html){$('#production-actions').innerHTML=html;renderedProduction=html;}
@@ -195,14 +197,14 @@ function productionUI(){
   for(const b of facilities)updateFactoryPanel(b);
 }
 function updateFactoryPanel(b){
-  const panel=document.querySelector(`[data-factory="${b.id}"]`),name=`${BUILDINGS[b.type].name} #${b.id}`,core=world.byId(b.core);
+  const panel=document.querySelector(`[data-factory="${b.id}"]`),name=facilityLabel(b),core=world.byId(b.core);
   panel.classList.toggle('selected',selection.has(b.id));
-  panel.querySelector('[data-factory-core]').textContent=core?`核心 ${String(core.serial).padStart(2,'0')} · ${core.energy} E`:'未接入核心';
-  panel.querySelector('[data-factory-count]').textContent=`队列 ${b.queue.length+(b.job?1:0)} / 8`;
+  panel.querySelector('[data-factory-core]').textContent=core?`◇ ${String(core.serial).padStart(2,'0')} · ${core.energy} E`:'无核心';panel.querySelector('[data-factory-core]').setAttribute('aria-label',core?`核心 ${String(core.serial).padStart(2,'0')} · ${core.energy} 能量`:'该建筑未接入核心');
+  panel.querySelector('[data-factory-count]').textContent=`${b.queue.length+(b.job?1:0)} / 8`;panel.querySelector('[data-factory-count]').setAttribute('aria-label',`生产队列 ${b.queue.length+(b.job?1:0)} / 8`);
   for(const button of panel.querySelectorAll('[data-produce]')){
     const type=button.dataset.produce,d=UNITS[type],unlocked=world.unitUnlocked(b.team,type),resuming=b.job?.paused&&b.job.type===type,count=b.queue.filter(t=>t===type).length;
     button.disabled=!unlocked;button.classList.toggle('locked',!unlocked);button.classList.toggle('unaffordable',!!core&&core.energy<d.cost);
-    button.querySelector('[data-factory-unit-state]').textContent=!unlocked?`需建成${BUILDINGS[d.requires].name}`:resuming?'已暂停 · 点击继续':count?`${count} 个等待订单`:'点击添加订单';
+    button.querySelector('[data-factory-unit-state]').textContent=!unlocked?`需 ${BUILDINGS[d.requires].name}`:resuming?'已暂停':count?`等待 ×${count}`:'';
     button.setAttribute('aria-label',`${name}：${!unlocked?'需要建成'+BUILDINGS[d.requires].name:resuming?'继续生产'+d.name:'生产'+d.name}`);
   }
   const current=panel.querySelector('[data-factory-current]'),progress=panel.querySelector('[data-factory-progress]'),controls=panel.querySelector('[data-factory-job-controls]');
@@ -210,7 +212,7 @@ function updateFactoryPanel(b){
   if(b.job){current.textContent=`${icons[b.job.type]} ${UNITS[b.job.type].name} · ${Math.ceil(b.job.remaining)}s`;progress.firstElementChild.style.width=`${(1-b.job.remaining/b.job.total)*100}%`;const toggle=controls.querySelector('[data-production-toggle]');toggle.textContent=b.job.paused?'继续':'暂停';toggle.setAttribute('aria-label',`${b.job.paused?'继续':'暂停'}${name}生产`);}
   const orders=panel.querySelector('[data-factory-orders]'),key=b.queue.join(',');
   if(orders.dataset.queueKey!==key){orders.innerHTML=b.queue.map((t,i)=>`<button class="queue-item" data-cancel-order="${i}" data-producer="${b.id}" aria-label="取消${name}的第 ${i+1} 个${UNITS[t].name}等待订单" title="取消${UNITS[t].name}等待订单">${icons[t]} ${UNITS[t].name} ×</button>`).join('');orders.dataset.queueKey=key;}
-  panel.querySelector('[data-production-status]').textContent=b.job?.paused?'手动暂停':!core?'等待装入核心':!b.powered?'电力不足':world.all(0,'unit').length>=60?'部队达到 60 上限':b.job?`生产${UNITS[b.job.type].name} · 剩余 ${Math.ceil(b.job.remaining)} 秒`:b.queue.length?core.energy<UNITS[b.queue[0]].cost?`等待该核心补充 ${UNITS[b.queue[0]].cost-core.energy} 能量`:paused?'订单已记录，继续作战后开始':'准备生产':'空闲 · 点击单位图标下单';
+  panel.querySelector('[data-production-status]').textContent=b.job?.paused?'已暂停':!core?'':!b.powered?'电力不足':world.all(0,'unit').length>=60?'60 上限':b.job?`${UNITS[b.job.type].name} · ${Math.ceil(b.job.remaining)}s`:b.queue.length?core.energy<UNITS[b.queue[0]].cost?`缺 ${UNITS[b.queue[0]].cost-core.energy} 能量`:paused?'已暂停':'队列中':'空闲';
 }
 $('.production-section').addEventListener('pointerdown',()=>pointerOnQueue=true);document.addEventListener('pointerup',()=>pointerOnQueue=false);document.addEventListener('pointercancel',()=>pointerOnQueue=false);
 function updateUI(force=false){
@@ -234,6 +236,7 @@ document.addEventListener('click',event=>{
   if(b.hasAttribute('data-focus-capture')){focusCapture();return;}
   if(b.dataset.core){const c=world.byId(Number(b.dataset.core));if(c){select([c.id]);focus(c);toast('已选择核心：点己方建筑装入，或点地面移动');}return;}
   if(b.dataset.productionTab){productionTab=b.dataset.productionTab;updateUI(true);return;}
+  if(b.dataset.factoryTab){facilityPick[productionTab]=Number(b.dataset.factoryTab);updateUI(true);return;}
   if(b.dataset.build){startBuild(b.dataset.build);return;}
   if(b.hasAttribute('data-build-toggle')){if(ensureStarted()){world.toggleBuildingPause(0);updateUI(true);}return;}
   if(b.hasAttribute('data-build-cancel')){if(ensureStarted()){world.cancelBuilding(0);if(mode?.kind==='build')cancelMode();toast('建筑已取消，已付能量退回原核心');updateUI(true);}return;}
@@ -258,6 +261,16 @@ function cancelField(){if(cancelCoreGesture())return;if(mode){cancelMode();updat
 $('#start-btn').onclick=start;$('#pause-btn').onclick=togglePause;$('#cancel-mode').onclick=cancelMode;$('#select-army').onclick=allArmy;$('#attack-btn').onclick=attackMode;$('#stop-btn').onclick=stopSelected;$('#deselect-btn').onclick=cancelField;
 $('#home-btn').onclick=()=>focus(world.base(0));$('#overview-btn').onclick=()=>{renderer.overview();collapseMobile();updateUI(true);};$('#zoom-in').onclick=()=>renderer.zoom(1.2);$('#zoom-out').onclick=()=>renderer.zoom(1/1.2);$('#panel-toggle').onclick=()=>{$('.sidebar').classList.toggle('expanded');$('#panel-toggle').textContent=$('.sidebar').classList.contains('expanded')?'⌄':'⌃';};
 $('#help-btn').onclick=()=>{if(started)paused=true;$('#help-dialog').showModal();updateUI(true);};
+function syncOrientationButton(){const locked=!!document.fullscreenElement,button=$('#orientation-btn');button.textContent=locked?'⤡':'⛶';button.setAttribute('aria-pressed',String(locked));button.title=locked?'退出全屏横屏':'全屏横屏（锁定方向）';button.setAttribute('aria-label',locked?'退出全屏横屏':'全屏横屏并锁定方向');}
+async function toggleOrientationLock(){
+  if(document.fullscreenElement){try{await document.exitFullscreen();}catch{}return;}
+  try{await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch{toast('浏览器拒绝了全屏请求，请关闭系统自动旋转后横握手机');return;}
+  // Orientation lock only applies while fullscreen; browsers without the API stay in fullscreen.
+  try{if(!screen.orientation?.lock)throw new Error('unsupported');await screen.orientation.lock('landscape');toast('已进入全屏并锁定横屏，再点一次退出');}
+  catch{toast('已进入全屏；此浏览器不支持锁定屏幕方向，请关闭系统自动旋转');}
+}
+document.addEventListener('fullscreenchange',syncOrientationButton);
+$('#orientation-btn').onclick=toggleOrientationLock;syncOrientationButton();
 $('#debug-btn').onclick=()=>{$('#debug-core').innerHTML=world.cores(0).map(c=>`<option value="${c.id}">核心 ${String(c.serial).padStart(2,'0')}</option>`).join('');$('#debug-dialog').showModal();updateUI(true);};
 $('#game-speed').onchange=e=>speed=Number(e.target.value);$('#energy-rate').onchange=e=>{const n=Number(e.target.value);world.config.rate=clamp(Number.isFinite(n)?Math.round(n):world.balance.economy.rate,0,100);e.target.value=world.config.rate;markDebug(`核心产能改为 ${world.config.rate}/秒`);updateUI(true);};$('#ai-enabled').onchange=e=>{world.config.ai=e.target.checked;markDebug(`AI ${world.config.ai?'开启':'关闭'}`);};$('#god-mode').onchange=e=>{world.config.invincible=e.target.checked;markDebug(`我方无敌${world.config.invincible?'开启':'关闭'}`);};
 $('#fog-enabled').onchange=e=>{world.config.fog=e.target.checked;renderer.hover=null;markDebug(`战争迷雾${world.config.fog?'开启':'关闭（全图可见）'}`);updateUI(true);};
